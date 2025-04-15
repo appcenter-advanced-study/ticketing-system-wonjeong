@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 public class ReservationServiceConcurrencyTest {
@@ -95,7 +94,7 @@ public class ReservationServiceConcurrencyTest {
         // 동시성 보호가 없으면 여러 예약이 성공하고 재고가 음수가 됨
         if (successCount.get() > 1) {
             System.out.println("이중 예약 문제 발생: " + successCount.get() + "개의 예약이 성공했습니다.");
-            assertTrue(ticketStock.getQuantity() < 0, "재고가 음수가 되어야 합니다");
+            assertEquals(0, ticketStock.getQuantity(), "재고는 0이어야 합니다");
         } else {
             System.out.println("정상 동작: 하나의 예약만 성공했습니다.");
             assertEquals(0, ticketStock.getQuantity(), "재고가 0이어야 합니다");
