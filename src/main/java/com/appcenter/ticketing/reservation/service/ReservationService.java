@@ -47,7 +47,6 @@ public class ReservationService {
     public ReservationResponse updateReservation(Long id, String username, Long ticketId) {
         // 예약건 조회
         Reservation foundReservation = reservationRepository.findById(id).orElseThrow();
-
         if (ticketId != null) {
             // 현 티켓 조회
             Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
@@ -55,10 +54,14 @@ public class ReservationService {
             Ticket oldTicket = foundReservation.getTicket();
             // 구 티켓 != 현 티켓
             if (ticket != null && !oldTicket.equals(ticket)) {
-                TicketStock ticketStock = ticketStockRepository.findByTicket(oldTicket);
-                // 티켓 반환 (구 티켓 재고에서 +1을 해줌)
-                ticketStock.increaseQuantity();
-                ticketStockRepository.save(ticketStock);
+                TicketStock oldTicketStock = ticketStockRepository.findByTicket(oldTicket);
+                TicketStock newTicketStock = ticketStockRepository.findByTicket(ticket);
+                // 원래 티켓 반환 (구 티켓 재고에서 +1을 해줌)
+                oldTicketStock.increaseQuantity();
+                // 새로운 티켓 판매 (새 티켓 재고에서 -1을 해줌)
+                newTicketStock.decreaseQuantity();
+                ticketStockRepository.save(oldTicketStock);
+                ticketStockRepository.save(newTicketStock);
             }
 
             // 현 티켓과 관계를 맺는다.
@@ -73,6 +76,12 @@ public class ReservationService {
 
     @Transactional
     public void deleteById(Long id) {
-        reservationRepository.deleteById(id);
+        Reservation reservation = reservationRepository.findById(id).orElseThrow();
+        Ticket ticket = reservation.getTicket();
+        TicketStock ticketStock = ticketStockRepository.findByTicket(ticket);
+        // 예약 삭제 시 티켓 반환
+        ticketStock.increaseQuantity();
+        ticketStockRepository.save(ticketStock);
+        reservationRepository.delete(reservation);
     }
 }

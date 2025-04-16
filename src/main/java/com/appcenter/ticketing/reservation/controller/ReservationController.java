@@ -33,7 +33,7 @@ public class ReservationController {
     }
 
     @PutMapping
-    public ResponseEntity<ReservationResponse> updateReservation(@RequestParam Long id, @RequestParam String username, @RequestParam Long ticketId) {
+    public ResponseEntity<ReservationResponse> updateReservation(@RequestParam Long id, @RequestParam(required = false) String username, @RequestParam(required = false) Long ticketId) {
         ReservationResponse result = reservationService.updateReservation(id, username, ticketId);
         return ResponseEntity.ok(result);
     }

@@ -28,6 +28,6 @@ public class Reservation {
 
     public void updateReservation(String username, Ticket ticket) {
         this.ticket = ticket != null ? ticket : this.ticket;
-        this.username = username;
+        this.username = username != null ? username : this.username;
     }
 }
