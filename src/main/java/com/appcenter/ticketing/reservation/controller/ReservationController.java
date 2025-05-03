@@ -1,6 +1,8 @@
 package com.appcenter.ticketing.reservation.controller;
 
 import com.appcenter.ticketing.reservation.dto.ReservationResponse;
+import com.appcenter.ticketing.reservation.event.ReservationEvent;
+import com.appcenter.ticketing.reservation.event.ReservationEventPublisher;
 import com.appcenter.ticketing.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,10 +15,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReservationController {
     private final ReservationService reservationService;
+    private final ReservationEventPublisher reservationEventPublisher;
 
     @PostMapping
     public ResponseEntity<Void> makeReservation(@RequestParam String username, @RequestParam Long ticketId) {
-        reservationService.createReservation(username, ticketId);
+        ReservationEvent event = ReservationEvent.builder()
+                .username(username)
+                .ticketId(ticketId)
+                .build();
+        reservationEventPublisher.publishReservationCreatedEvent(event);
         return ResponseEntity.ok().build();
     }
 

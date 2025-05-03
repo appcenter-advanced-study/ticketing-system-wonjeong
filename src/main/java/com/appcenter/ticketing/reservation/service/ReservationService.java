@@ -27,6 +27,13 @@ public class ReservationService {
         Reservation reservation = new Reservation(username, ticket);
         TicketStock ticketStock = ticketStockRepository.findByTicket(ticket);
         ticketStock.decreaseQuantity();
+
+        try {
+            Thread.sleep(500); // 락 보유 시간을 인위적으로 증가
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         ticketStockRepository.save(ticketStock);
         reservationRepository.save(reservation);
     }

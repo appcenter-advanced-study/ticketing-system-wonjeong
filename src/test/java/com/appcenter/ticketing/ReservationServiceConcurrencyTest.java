@@ -10,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,12 @@ public class ReservationServiceConcurrencyTest {
     @Autowired
     private ReservationRepository reservationRepository;
 
+    @Autowired
+    private TransactionTemplate transactionTemplate;
+
+
     @BeforeEach
+    @Transactional
     void setUp() {
         // 기존 데이터 정리
         reservationRepository.deleteAll();
@@ -84,8 +91,10 @@ public class ReservationServiceConcurrencyTest {
         executorService.shutdown();
 
         // 결과 검증
-        TicketStock ticketStock = ticketStockRepository.findByTicket(
-                ticketRepository.findById(ticketId).orElseThrow());
+        TicketStock ticketStock = transactionTemplate.execute(status -> {
+            Ticket ticket = ticketRepository.findById(ticketId).orElseThrow();
+            return ticketStockRepository.findByTicket(ticket);
+        });
 
         System.out.println("성공한 예약 수: " + successCount.get());
         System.out.println("남은 재고: " + ticketStock.getQuantity());
